@@ -24,3 +24,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+const sevaCatalogRoutes = require("./routes/sevaCatalogRoutes")
+app.use("/api/sevas", sevaCatalogRoutes)
+const receiptRoutes = require("./routes/receiptRoutes")
+app.use("/api/receipts", receiptRoutes)
