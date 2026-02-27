@@ -61,5 +61,25 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Error fetching recurring sevas" })
   }
 })
+// Cancel Recurring Seva
+router.put("/:id/cancel", async (req, res) => {
+  try {
+    
+    const updated = await RecurringSeva.findByIdAndUpdate(
+      req.params.id,
+      { active: false },
+      { new: true }
+    )
+
+    if (!updated) {
+      return res.status(404).json({ message: "Recurring seva not found" })
+    }
+
+    res.json(updated)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Error cancelling recurring seva" })
+  }
+})
 
 module.exports = router
