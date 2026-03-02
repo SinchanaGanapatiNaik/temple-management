@@ -44,6 +44,15 @@ const sevaExecutionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    paymentStatus: {
+  type: String,
+  enum: ["PENDING", "PAID"],
+  default: "PENDING"
+},
+paymentMode: {
+  type: String,
+  enum: ["CASH", "UPI", "ONLINE"],
+}
   },
   { timestamps: true }
 )
