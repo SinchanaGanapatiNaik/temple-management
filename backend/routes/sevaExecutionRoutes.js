@@ -44,5 +44,27 @@ router.put("/:id/complete", async (req, res) => {
     res.status(500).json({ message: "Error updating execution" })
   }
 })
+// Mark Execution as Paid
+router.put("/:id/mark-paid", async (req, res) => {
+  try {
+    const updated = await SevaExecution.findByIdAndUpdate(
+      req.params.id,
+      {
+        paymentStatus: "PAID",
+        paymentMode: "CASH"
+      },
+      { new: true }
+    )
+
+    if (!updated) {
+      return res.status(404).json({ message: "Execution not found" })
+    }
+
+    res.json(updated)
+  } catch (error) {
+    console.error("Error marking payment:", error)
+    res.status(500).json({ message: "Error marking as paid" })
+  }
+})
 
 module.exports = router
