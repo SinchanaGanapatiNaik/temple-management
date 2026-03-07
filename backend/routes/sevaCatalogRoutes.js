@@ -44,5 +44,22 @@ router.put("/:id/deactivate", async (req, res) => {
     res.status(500).json({ message: "Error deactivating seva" })
   }
 })
+// Toggle active status
+router.put("/:id/toggle", async (req, res) => {
+  try {
+    const seva = await SevaCatalog.findById(req.params.id)
+
+    if (!seva) {
+      return res.status(404).json({ message: "Seva not found" })
+    }
+
+    seva.active = !seva.active
+    await seva.save()
+
+    res.json(seva)
+  } catch (error) {
+    res.status(500).json({ message: "Error updating seva" })
+  }
+})
 
 module.exports = router

@@ -5,6 +5,7 @@ import Counter from "./pages/Counter"
 import AdminLayout from "./layouts/AdminLayout"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Recurring from "./pages/Recurring"
+import SevaCatalog from "./pages/SevaCatalog"
 
 function App() {
   return (
@@ -26,7 +27,9 @@ function App() {
 
 
 <Route path="recurring" element={<Recurring />} />
+<Route path="seva-catalog" element={<SevaCatalog />} />
 </Route>
+
     </Routes>
   )
 }

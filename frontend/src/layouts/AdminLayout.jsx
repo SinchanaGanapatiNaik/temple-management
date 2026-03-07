@@ -72,6 +72,7 @@ function AdminLayout() {
   >
     Recurring Sevas
   </NavLink>
+  <NavLink to="/admin/seva-catalog">Seva Catalog</NavLink>
 
 </nav>
       </aside>
