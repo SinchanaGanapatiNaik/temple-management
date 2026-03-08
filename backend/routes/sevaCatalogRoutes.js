@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 // Get all active sevas
 router.get("/", async (req, res) => {
   try {
-    const sevas = await SevaCatalog.find({ active: true })
+    const sevas = await SevaCatalog.find()
     res.json(sevas)
   } catch (error) {
     res.status(500).json({ message: "Error fetching sevas" })

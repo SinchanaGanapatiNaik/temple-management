@@ -15,6 +15,9 @@ function SevaCatalog() {
     try {
       const res = await fetch("http://localhost:5000/api/sevas")
       const data = await res.json()
+
+      console.log("SEVAS FROM API:", data)
+
       setSevas(data)
       setLoading(false)
     } catch (error) {
@@ -94,43 +97,41 @@ function SevaCatalog() {
         </button>
       </div>
 
-      {/* Seva List */}
+      {/* Active Seva List */}
       {loading ? (
         <p>Loading...</p>
-      ) : sevas.length === 0 ? (
-        <p>No sevas found</p>
+      ) : sevas.filter((s) => s.active).length === 0 ? (
+        <p>No active sevas</p>
       ) : (
         <div className="space-y-4">
-          {sevas.map((seva) => (
-            <div
-              key={seva._id}
-              className="flex justify-between items-center border p-4 rounded"
-            >
-              <div>
-                <p className="font-semibold">{seva.name}</p>
-                <p className="text-gray-500">₹{seva.price}</p>
-              </div>
 
-              <div className="flex items-center gap-3">
-                {seva.active ? (
+          {sevas
+            .filter((seva) => seva.active)
+            .map((seva) => (
+              <div
+                key={seva._id}
+                className="flex justify-between items-center border p-4 rounded"
+              >
+                <div>
+                  <p className="font-semibold">{seva.name}</p>
+                  <p className="text-gray-500">₹{seva.price}</p>
+                </div>
+
+                <div className="flex items-center gap-3">
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
                     Active
                   </span>
-                ) : (
-                  <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm">
-                    Inactive
-                  </span>
-                )}
 
-                <button
-                  onClick={() => toggleSevaStatus(seva._id)}
-                  className="text-sm bg-gray-800 text-white px-3 py-1 rounded"
-                >
-                  {seva.active ? "Disable" : "Enable"}
-                </button>
+                  <button
+                    onClick={() => toggleSevaStatus(seva._id)}
+                    className="text-sm bg-gray-800 text-white px-3 py-1 rounded"
+                  >
+                    Disable
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+
         </div>
       )}
 
@@ -140,7 +141,7 @@ function SevaCatalog() {
 
           <div className="bg-white rounded-xl shadow-lg p-6 w-[500px]">
 
-            {/* Close Button */}
+            {/* Modal Header */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {showExisting ? "Restore Existing Seva" : "Add New Seva"}
@@ -204,7 +205,10 @@ function SevaCatalog() {
 
                 <div className="space-y-3 max-h-60 overflow-y-auto">
 
-                  {(search ? filteredInactive : inactiveSevas.slice(0,4)).map((seva) => (
+                  {(search.length > 0
+                    ? filteredInactive
+                    : inactiveSevas.slice(0, 4)
+                  ).map((seva) => (
                     <div
                       key={seva._id}
                       className="flex justify-between items-center border p-3 rounded"
@@ -235,9 +239,11 @@ function SevaCatalog() {
                 </button>
               </>
             )}
+
           </div>
         </div>
       )}
+
     </div>
   )
 }

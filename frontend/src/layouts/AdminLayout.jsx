@@ -72,7 +72,18 @@ function AdminLayout() {
   >
     Recurring Sevas
   </NavLink>
-  <NavLink to="/admin/seva-catalog">Seva Catalog</NavLink>
+  <NavLink
+    to="/admin/seva-catalog"
+    className={({ isActive }) =>
+      `block px-3 py-2 rounded-lg transition ${
+        isActive
+          ? "bg-amber-100 text-amber-800 font-semibold"
+          : "text-gray-700 hover:bg-amber-50 hover:text-amber-700"
+      }`
+    }
+  >
+    Seva Catalog
+  </NavLink>
 
 </nav>
       </aside>
