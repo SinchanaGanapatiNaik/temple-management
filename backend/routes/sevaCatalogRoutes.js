@@ -61,5 +61,24 @@ router.put("/:id/toggle", async (req, res) => {
     res.status(500).json({ message: "Error updating seva" })
   }
 })
+router.put("/:id", async (req, res) => {
+  try {
+    const { price } = req.body
+
+    const seva = await SevaCatalog.findByIdAndUpdate(
+      req.params.id,
+      { price },
+      { new: true }
+    )
+
+    if (!seva) {
+      return res.status(404).json({ message: "Seva not found" })
+    }
+
+    res.json(seva)
+  } catch (error) {
+    res.status(500).json({ message: "Error updating seva price" })
+  }
+})
 
 module.exports = router

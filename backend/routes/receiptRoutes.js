@@ -100,6 +100,39 @@ router.get("/today", async (req, res) => {
     res.status(500).json({ message: "Error fetching today's receipts" })
   }
 })
+router.get("/stats", async (req, res) => {
+  try {
 
+    const today = new Date()
+    today.setHours(0,0,0,0)
+
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0,0,0,0)
+
+    const todayReceipts = await Receipt.find({
+      date: { $gte: today }
+    })
+
+    const monthReceipts = await Receipt.find({
+      date: { $gte: monthStart }
+    })
+
+    const todayRevenue = todayReceipts.reduce((sum,r)=>sum+r.totalAmount,0)
+    const monthRevenue = monthReceipts.reduce((sum,r)=>sum+r.totalAmount,0)
+
+    const totalReceipts = await Receipt.countDocuments()
+
+    res.json({
+      todayRevenue,
+      monthRevenue,
+      todayReceipts: todayReceipts.length,
+      totalReceipts
+    })
+
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching stats" })
+  }
+})
 
 module.exports = router

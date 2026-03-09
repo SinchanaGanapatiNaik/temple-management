@@ -11,13 +11,13 @@ function SevaCatalog() {
   const [price, setPrice] = useState("")
   const [search, setSearch] = useState("")
 
+  const [editSeva, setEditSeva] = useState(null)
+  const [newPrice, setNewPrice] = useState("")
+
   const fetchSevas = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/sevas")
       const data = await res.json()
-
-      console.log("SEVAS FROM API:", data)
-
       setSevas(data)
       setLoading(false)
     } catch (error) {
@@ -63,6 +63,30 @@ function SevaCatalog() {
       fetchSevas()
     } catch (error) {
       console.error("Error toggling seva")
+    }
+  }
+
+  const openEditModal = (seva) => {
+    setEditSeva(seva)
+    setNewPrice(seva.price)
+  }
+
+  const updatePrice = async () => {
+    try {
+      await fetch(`http://localhost:5000/api/sevas/${editSeva._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          price: newPrice,
+        }),
+      })
+
+      setEditSeva(null)
+      fetchSevas()
+    } catch (error) {
+      console.error("Error updating price")
     }
   }
 
@@ -117,17 +141,26 @@ function SevaCatalog() {
                   <p className="text-gray-500">₹{seva.price}</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
                     Active
                   </span>
 
                   <button
+                    onClick={() => openEditModal(seva)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Edit
+                  </button>
+
+                  <button
                     onClick={() => toggleSevaStatus(seva._id)}
-                    className="text-sm bg-gray-800 text-white px-3 py-1 rounded"
+                    className="bg-gray-800 text-white px-3 py-1 rounded text-sm"
                   >
                     Disable
                   </button>
+
                 </div>
               </div>
             ))}
@@ -135,13 +168,12 @@ function SevaCatalog() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Add Seva Modal */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
 
           <div className="bg-white rounded-xl shadow-lg p-6 w-[500px]">
 
-            {/* Modal Header */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {showExisting ? "Restore Existing Seva" : "Add New Seva"}
@@ -155,7 +187,6 @@ function SevaCatalog() {
               </button>
             </div>
 
-            {/* Add New Seva */}
             {!showExisting && (
               <>
                 <div className="flex gap-3 mb-4">
@@ -192,7 +223,6 @@ function SevaCatalog() {
               </>
             )}
 
-            {/* Restore Existing */}
             {showExisting && (
               <>
                 <input
@@ -229,6 +259,7 @@ function SevaCatalog() {
                       No inactive sevas
                     </p>
                   )}
+
                 </div>
 
                 <button
@@ -239,6 +270,45 @@ function SevaCatalog() {
                 </button>
               </>
             )}
+
+          </div>
+        </div>
+      )}
+
+      {/* Edit Price Modal */}
+      {editSeva && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
+
+          <div className="bg-white p-6 rounded-xl shadow-lg w-[400px]">
+
+            <h2 className="text-xl font-semibold mb-4">
+              Edit Price — {editSeva.name}
+            </h2>
+
+            <input
+              type="number"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              className="border p-2 rounded w-full mb-4"
+            />
+
+            <div className="flex justify-end gap-2">
+
+              <button
+                onClick={() => setEditSeva(null)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={updatePrice}
+                className="px-4 py-2 bg-indigo-600 text-white rounded"
+              >
+                Save
+              </button>
+
+            </div>
 
           </div>
         </div>
