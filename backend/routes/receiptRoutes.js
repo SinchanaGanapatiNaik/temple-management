@@ -134,5 +134,19 @@ router.get("/stats", async (req, res) => {
     res.status(500).json({ message: "Error fetching stats" })
   }
 })
+// Get all receipts (for history page)
+router.get("/", async (req, res) => {
+  try {
+
+    const receipts = await Receipt.find()
+      .sort({ createdAt: -1 })
+
+    res.json(receipts)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Error fetching receipts" })
+  }
+})
 
 module.exports = router
