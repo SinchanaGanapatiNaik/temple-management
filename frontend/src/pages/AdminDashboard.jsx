@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts"
 
 function AdminDashboard() {
 
   const [executions, setExecutions] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState(null)
+  const [weeklyRevenue, setWeeklyRevenue] = useState([])
+  
 
   const fetchStats = async () => {
     try {
@@ -27,11 +38,27 @@ function AdminDashboard() {
       setLoading(false)
     }
   }
+  const fetchWeeklyRevenue = async () => {
+  try {
+
+    const res = await fetch(
+      "http://localhost:5000/api/receipts/weekly-revenue"
+    )
+
+    const data = await res.json()
+
+    setWeeklyRevenue(data)
+
+  } catch (error) {
+    console.error("Error fetching weekly revenue")
+  }
+}
 
   useEffect(() => {
-    fetchTodayExecutions()
-    fetchStats()
-  }, [])
+  fetchTodayExecutions()
+  fetchStats()
+  fetchWeeklyRevenue()
+}, [])
 
   const markCompleted = async (id) => {
     try {
@@ -120,6 +147,46 @@ function AdminDashboard() {
 
         </div>
       )}
+      <div className="bg-white shadow rounded-xl p-6 mt-8">
+
+  <h2 className="text-xl font-semibold mb-4 text-gray-700">
+    📊 Revenue (Last 7 Days)
+  </h2>
+
+  <ResponsiveContainer width="100%" height={300}>
+    <LineChart data={weeklyRevenue}>
+
+      <CartesianGrid strokeDasharray="3 3" />
+
+      <XAxis
+  dataKey="date"
+  tickFormatter={(date) => {
+    const d = new Date(date)
+    return d.toLocaleDateString("en-IN", {
+      month: "short",
+      day: "2-digit"
+    })
+  }}
+/>
+
+      <YAxis />
+
+      <Tooltip
+  formatter={(value) => [`₹${value}`, "Revenue"]}
+/>
+
+      <Line
+        type="monotone"
+        dataKey="revenue"
+        stroke="#f59e0b"
+        strokeWidth={3}
+        dot={{ r: 4 }}
+      />
+
+    </LineChart>
+  </ResponsiveContainer>
+
+</div>
 
       {/* Seva Status Cards */}
 

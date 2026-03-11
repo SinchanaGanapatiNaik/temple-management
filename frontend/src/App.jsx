@@ -6,6 +6,7 @@ import AdminLayout from "./layouts/AdminLayout"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Recurring from "./pages/Recurring"
 import SevaCatalog from "./pages/SevaCatalog"
+import Receipts from "./pages/Receipts"
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
     </ProtectedRoute>
   }
 >
+  
   <Route path="dashboard" element={<AdminDashboard />} />
   <Route path="counter" element={<Counter />} />
   <Route path="devotees" element={<div>Devotees Page</div>} />
@@ -28,7 +30,9 @@ function App() {
 
 <Route path="recurring" element={<Recurring />} />
 <Route path="seva-catalog" element={<SevaCatalog />} />
+<Route path="receipts" element={<Receipts />} />
 </Route>
+
 
     </Routes>
   )

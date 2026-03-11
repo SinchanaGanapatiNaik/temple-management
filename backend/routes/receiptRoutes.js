@@ -148,5 +148,49 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Error fetching receipts" })
   }
 })
+router.get("/weekly-revenue", async (req, res) => {
+  try {
+
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    sevenDaysAgo.setHours(0,0,0,0)
+
+    const receipts = await Receipt.find({
+      date: { $gte: sevenDaysAgo }
+    })
+
+    const revenueMap = {}
+
+    receipts.forEach(r => {
+      const date = new Date(r.date).toISOString().split("T")[0]
+
+      if (!revenueMap[date]) {
+        revenueMap[date] = 0
+      }
+
+      revenueMap[date] += r.totalAmount
+    })
+
+    const result = []
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date()
+      d.setDate(d.getDate() - (6 - i))
+
+      const key = d.toISOString().split("T")[0]
+
+      result.push({
+        date: key,
+        revenue: revenueMap[key] || 0
+      })
+    }
+
+    res.json(result)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Error fetching weekly revenue" })
+  }
+})
 
 module.exports = router
