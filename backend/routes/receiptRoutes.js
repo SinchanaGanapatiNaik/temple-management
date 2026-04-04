@@ -137,15 +137,28 @@ router.get("/stats", async (req, res) => {
 // Get all receipts (for history page)
 router.get("/", async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1
+    const limit = 10
+    const skip = (page - 1) * limit
+
+    const totalReceipts = await Receipt.countDocuments()
 
     const receipts = await Receipt.find()
-      .sort({ createdAt: -1 })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit)
 
-    res.json(receipts)
+    res.json({
+      receipts,
+      totalPages: Math.ceil(totalReceipts / limit),
+      currentPage: page
+    })
 
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: "Error fetching receipts" })
+    res.status(500).json({
+      message: "Error fetching receipts"
+    })
   }
 })
 router.get("/weekly-revenue", async (req, res) => {
@@ -192,5 +205,76 @@ router.get("/weekly-revenue", async (req, res) => {
     res.status(500).json({ message: "Error fetching weekly revenue" })
   }
 })
+router.get("/top-sevas", async (req, res) => {
+  try {
 
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0,0,0,0)
+
+    const result = await Receipt.aggregate([
+
+      {
+        $match: {
+          date: { $gte: monthStart }
+        }
+      },
+
+      { $unwind: "$items" },
+
+      {
+        $group: {
+          _id: "$items.sevaName",
+          revenue: { $sum: "$items.lineTotal" }
+        }
+      },
+
+      {
+        $sort: { revenue: -1 }
+      },
+
+      {
+        $limit: 5
+      }
+
+    ])
+
+    res.json(result)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Error fetching top sevas" })
+  }
+})
+router.get("/payment-mode-insights", async (req, res) => {
+  try {
+    const result = await Receipt.aggregate([
+      {
+        $group: {
+          _id: "$paymentMode",
+          count: { $sum: 1 }
+        }
+      }
+    ])
+
+    const total = result.reduce(
+      (sum, item) => sum + item.count,
+      0
+    )
+
+    const insights = result.map((item) => ({
+      mode: item._id,
+      count: item.count,
+      percentage: ((item.count / total) * 100).toFixed(1)
+    }))
+
+    res.json(insights)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: "Error fetching payment insights"
+    })
+  }
+})
 module.exports = router
