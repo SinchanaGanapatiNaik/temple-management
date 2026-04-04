@@ -7,19 +7,27 @@ function Receipts() {
   const [search, setSearch] = useState("")
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+const [totalPages, setTotalPages] = useState(1)
 
-  const fetchReceipts = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/receipts")
-      const data = await res.json()
+const fetchReceipts = async (page = 1) => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/receipts?page=${page}`
+    )
 
-      setReceipts(data)
-      setLoading(false)
-    } catch (error) {
-      console.error("Error fetching receipts")
-      setLoading(false)
-    }
+    const data = await res.json()
+
+    setReceipts(data.receipts)
+    setTotalPages(data.totalPages)
+    setCurrentPage(data.currentPage)
+
+    setLoading(false)
+  } catch (error) {
+    console.error("Error fetching receipts")
+    setLoading(false)
   }
+}
 
   useEffect(() => {
     fetchReceipts()
@@ -46,13 +54,118 @@ function Receipts() {
     (sum, r) => sum + r.totalAmount,
     0
   )
+  const handleReprint = (receipt) => {
+  const printWindow = window.open("", "_blank")
+
+  const receiptHTML = `
+    <html>
+      <head>
+        <title>Receipt ${receipt.receiptNumber}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+          h2 {
+            text-align: center;
+          }
+          .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+          }
+          hr {
+            margin: 10px 0;
+          }
+        </style>
+      </head>
+      <body>
+ 
+        <h2>🛕 Temple Counter Receipt</h2>
+        
+
+        <p><strong>Receipt No:</strong> ${receipt.receiptNumber}</p>
+        <p><strong>Date:</strong> ${new Date(receipt.date).toLocaleDateString()}</p>
+
+        <hr/>
+
+        ${receipt.items.map(item => `
+          <div class="row">
+            <span>${item.sevaName} × ${item.quantity}</span>
+            <span>₹${item.lineTotal}</span>
+          </div>
+        `).join("")}
+
+        <hr/>
+
+        <div class="row">
+          <strong>Total</strong>
+          <strong>₹${receipt.totalAmount}</strong>
+        </div>
+
+        <p><strong>Payment Mode:</strong> ${receipt.paymentMode}</p>
+
+        <p style="text-align:center; margin-top:20px;">
+          Thank you 🙏
+        </p>
+      </body>
+    </html>
+  `
+
+  printWindow.document.write(receiptHTML)
+  printWindow.document.close()
+  printWindow.print()
+}
+const handleExportCSV = () => {
+  const headers = [
+    "Receipt Number",
+    "Date",
+    "Amount",
+    "Payment Mode"
+  ]
+
+  const rows = receipts.map((receipt) => [
+    receipt.receiptNumber,
+    new Date(receipt.date).toLocaleDateString(),
+    receipt.totalAmount,
+    receipt.paymentMode
+  ])
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(row => row.join(","))
+  ].join("\n")
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;"
+  })
+
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement("a")
+  link.href = url
+  link.setAttribute("download", "receipts.csv")
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
   return (
     <div className="p-8">
 
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        📄 Receipt History
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+  <h1 className="text-3xl font-bold text-gray-800">
+    📄 Receipt History
+  </h1>
+
+  <button
+    onClick={handleExportCSV}
+    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+  >
+    Export CSV
+  </button>
+</div>
 
       {/* Search */}
       <input
@@ -121,13 +234,14 @@ function Receipts() {
           <table className="w-full border-collapse">
 
             <thead>
-              <tr className="border-b text-left">
-                <th className="py-3">Receipt No</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Payment Mode</th>
-              </tr>
-            </thead>
+  <tr className="border-b text-left">
+    <th className="py-3">Receipt No</th>
+    <th>Date</th>
+    <th>Amount</th>
+    <th>Payment Mode</th>
+    <th>Action</th>
+  </tr>
+</thead>
 
             <tbody>
               {filteredReceipts.map((receipt) => (
@@ -150,6 +264,14 @@ function Receipts() {
                   <td>
                     {receipt.paymentMode}
                   </td>
+                  <td>
+  <button
+    onClick={() => handleReprint(receipt)}
+    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
+  >
+    Reprint
+  </button>
+</td>
                 </tr>
               ))}
             </tbody>
@@ -157,10 +279,26 @@ function Receipts() {
           </table>
 
         )}
+        
 
       </div>
-
+<div className="flex gap-2 mt-4">
+  {[...Array(totalPages)].map((_, index) => (
+    <button
+      key={index}
+      onClick={() => fetchReceipts(index + 1)}
+      className={`px-3 py-1 rounded ${
+        currentPage === index + 1
+          ? "bg-indigo-600 text-white"
+          : "bg-gray-200"
+      }`}
+    >
+      {index + 1}
+    </button>
+  ))}
+</div>
     </div>
+    
   )
 }
 
