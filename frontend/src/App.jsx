@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import Recurring from "./pages/Recurring"
 import SevaCatalog from "./pages/SevaCatalog"
 import Receipts from "./pages/Receipts"
+import Reports from "./pages/Reports"
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
     </ProtectedRoute>
   }
 >
-  
+  <Route path="reports" element={<Reports />} />
   <Route path="dashboard" element={<AdminDashboard />} />
   <Route path="counter" element={<Counter />} />
   <Route path="devotees" element={<div>Devotees Page</div>} />
