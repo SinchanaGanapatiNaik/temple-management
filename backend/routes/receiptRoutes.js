@@ -277,4 +277,111 @@ router.get("/payment-mode-insights", async (req, res) => {
     })
   }
 })
+router.get("/weekday-insights", async (req, res) => {
+  try {
+    const receipts = await Receipt.find()
+
+    const dayMap = {
+      Monday: 0,
+      Tuesday: 0,
+      Wednesday: 0,
+      Thursday: 0,
+      Friday: 0,
+      Saturday: 0,
+      Sunday: 0,
+    }
+
+    receipts.forEach((receipt) => {
+      const day = new Date(receipt.date).toLocaleDateString("en-US", {
+        weekday: "long",
+      })
+
+      dayMap[day] += 1
+    })
+
+    const result = Object.entries(dayMap).map(
+      ([day, count]) => ({
+        day,
+        count,
+      })
+    )
+
+    res.json(result)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: "Error fetching weekday insights",
+    })
+  }
+})
+router.get("/monthly-trend", async (req, res) => {
+  try {
+    const receipts = await Receipt.find()
+
+    const monthMap = {}
+
+    receipts.forEach((receipt) => {
+      const month = new Date(receipt.date).toLocaleDateString(
+        "en-US",
+        { month: "short" }
+      )
+
+      if (!monthMap[month]) {
+        monthMap[month] = 0
+      }
+
+      monthMap[month] += receipt.totalAmount
+    })
+
+    const result = Object.entries(monthMap).map(
+      ([month, revenue]) => ({
+        month,
+        revenue
+      })
+    )
+
+    res.json(result)
+
+  } catch (error) {
+    console.error("Error fetching monthly trend", error)
+    res.status(500).json({
+      message: "Error fetching monthly trend"
+    })
+  }
+})
+router.get("/historical-seva-trend", async (req, res) => {
+  try {
+    const receipts = await Receipt.find()
+
+    const sevaMap = {}
+
+    receipts.forEach((receipt) => {
+      receipt.items.forEach((item) => {
+        const sevaName = item.sevaName
+
+        if (!sevaMap[sevaName]) {
+          sevaMap[sevaName] = 0
+        }
+
+        sevaMap[sevaName] += item.quantity
+      })
+    })
+
+    const result = Object.entries(sevaMap)
+      .map(([name, count]) => ({
+        sevaName: name,
+        count
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    res.json(result)
+
+  } catch (error) {
+    console.error("Error fetching seva trend", error)
+    res.status(500).json({
+      message: "Error fetching seva trend"
+    })
+  }
+})
 module.exports = router
